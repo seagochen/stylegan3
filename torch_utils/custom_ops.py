@@ -56,6 +56,7 @@ def _get_mangled_gpu_name():
 
 _cached_plugins = dict()
 
+
 def get_plugin(module_name, sources, headers=None, source_dir=None, **build_kwargs):
     assert verbosity in ['none', 'brief', 'full']
     if headers is None:
@@ -133,10 +134,44 @@ def get_plugin(module_name, sources, headers=None, source_dir=None, **build_kwar
 
             # Compile.
             cached_sources = [os.path.join(cached_build_dir, os.path.basename(fname)) for fname in sources]
-            torch.utils.cpp_extension.load(name=module_name, build_directory=cached_build_dir,
-                verbose=verbose_build, sources=cached_sources, **build_kwargs)
+            extra_cflags = build_kwargs.pop('extra_cflags', []) + ['-O3']
+            extra_cuda_cflags = build_kwargs.pop('extra_cuda_cflags', []) + [
+                '--use_fast_math',
+                '-gencode=arch=compute_86,code=compute_86',
+                '-gencode=arch=compute_86,code=sm_86',
+                '-gencode=arch=compute_89,code=compute_89',
+                '-gencode=arch=compute_89,code=sm_89',
+            ]
+            extra_ldflags = build_kwargs.pop('extra_ldflags', []) + ['-lcudart']
+            torch.utils.cpp_extension.load(
+                name=module_name, 
+                build_directory=cached_build_dir,
+                verbose=True,  # Enable verbose output
+                sources=cached_sources, 
+                extra_cflags=extra_cflags,
+                extra_cuda_cflags=extra_cuda_cflags,
+                extra_ldflags=extra_ldflags,
+                **build_kwargs
+            )
         else:
-            torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+            extra_cflags = build_kwargs.pop('extra_cflags', []) + ['-O3']
+            extra_cuda_cflags = build_kwargs.pop('extra_cuda_cflags', []) + [
+                '--use_fast_math',
+                '-gencode=arch=compute_86,code=compute_86',
+                '-gencode=arch=compute_86,code=sm_86',
+                '-gencode=arch=compute_89,code=compute_89',
+                '-gencode=arch=compute_89,code=sm_89',
+            ]
+            extra_ldflags = build_kwargs.pop('extra_ldflags', []) + ['-lcudart']
+            torch.utils.cpp_extension.load(
+                name=module_name, 
+                verbose=True,  # Enable verbose output
+                sources=sources, 
+                extra_cflags=extra_cflags,
+                extra_cuda_cflags=extra_cuda_cflags,
+                extra_ldflags=extra_ldflags,
+                **build_kwargs
+            )
 
         # Load.
         module = importlib.import_module(module_name)
@@ -153,5 +188,6 @@ def get_plugin(module_name, sources, headers=None, source_dir=None, **build_kwar
         print('Done.')
     _cached_plugins[module_name] = module
     return module
+
 
 #----------------------------------------------------------------------------

@@ -1,0 +1,8 @@
+datasets/
+training-runs/
+
+*.pyc
+*egg-info
+
+# Ignore the pkl models
+*.pkl
