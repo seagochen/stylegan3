@@ -28,11 +28,18 @@ verbosity = 'brief' # Verbosity level: 'none', 'brief', 'full'
 
 def _find_compiler_bindir():
     patterns = [
+        # Windows
         'C:/Program Files*/Microsoft Visual Studio/*/Professional/VC/Tools/MSVC/*/bin/Hostx64/x64',
         'C:/Program Files*/Microsoft Visual Studio/*/BuildTools/VC/Tools/MSVC/*/bin/Hostx64/x64',
         'C:/Program Files*/Microsoft Visual Studio/*/Community/VC/Tools/MSVC/*/bin/Hostx64/x64',
         'C:/Program Files*/Microsoft Visual Studio */vc/bin',
+
+        # Linux
+        '/usr/local/cuda/bin',
+        '/usr/bin',
+        '/usr/local/bin',  # Added common location for custom installations
     ]
+    
     for pattern in patterns:
         matches = sorted(glob.glob(pattern))
         if len(matches):

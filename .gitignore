@@ -6,3 +6,6 @@ training-runs/
 
 # Ignore the pkl models
 *.pkl
+
+# Ignor the commands
+training_history.txt
